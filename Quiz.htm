@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nick Cave - Quiz</title>
+<link rel="stylesheet" type="text/css" href="Content/PageContent.css">
+
+<style type="text/css">
+
+.header{
+	text-align:center;
+	font-size:32px;
+	margin-top:30px;
+	color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+    <header id="home_header">
+		<div class="header">NICK CAVE</div>
+			
+	</header>
+	<div class="pgcnt-heading" style="height: 25px; text-align:center; margin-top:30px;">
+		<a href="index.html" class="nav-option" style="color:white">HOME / </a>
+		<a href="biography.html" class="nav-option" style="color:white">BIOGRAPHY / </a>
+		<a href="Multimedia/index.html" class="nav-option" style="color:white">MULTIMEDIA / </a>
+		<a href="Work.html" class="nav-option" style="color:white">WORK / </a>
+		<a href="Comments.php" class="nav-option" style="color:white">COMMENTS  / </a>
+        <a href="Quiz.htm" class="nav-option" style="color:white">QUIZ </a>
+
+	</div>
+
+    <div id="successMessageDiv" style="height: 25px; text-align:center; margin-top:100px;"></div>
+
+    <div id="questionDiv" style="height: 25px; text-align:center; margin-top:100px;"></div>
+    
+    <div id="answersDiv" style="text-align:center; margin-top:100px;"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+       
+       sendInitializeRequest();
+       sendQuestionRequest(0);
+       
+    });
+
+    function sendQuestionRequest(questionNo){
+        $("#successMessageDiv").html("");
+        $.ajax({
+           type: "POST",
+           url: "QuestionFetcher.php",
+           data: { questionNumber: questionNo},
+           success: function(items){
+                $("#questionDiv").html(items);
+                sendAnswerRequest();
+           }
+        });
+        
+    }
+
+    function sendInitializeRequest(){
+       
+       $.ajax({
+        type: "POST",
+        url: "QuestionReader.php"
+       }); 
+    }
+    
+    function validateAnswer(e){
+        e.preventDefault();
+        return false;
+    }
+
+    function sendAnswerRequest(){
+                $.ajax({
+            type: "POST",
+            url: "AnswerReader.php",
+            data: {questionId: $("#questionSpan").data("question")},
+            success:function(items){
+                $("#answersDiv").html(items);
+                
+                $('a').click(function(event) {
+                    var currentId = $(this).attr("id");
+            
+                    $.ajax({
+                        type: "POST",
+                        url: "AnswerValidator.php",
+                        data: {answerId: $("#" + currentId).data("answer")},
+                        success: function(items){
+                            $("#successMessageDiv").html(items);
+                            
+                            setTimeout(function(){
+                                sendQuestionRequest($("#questionSpan").data("index") + 1);
+                            }, 5000);
+                            
+                            
+                        } 
+                    });
+                     
+                });
+            }
+        });
+    }
+
+
+</script>
+
+</body>
+</html>
